@@ -1,0 +1,37 @@
+%Matlab
+% Load data
+load('data.mat');
+
+% Initialize kernel functions and box_constraints values
+kernel_functions = {'linear', 'gaussian', 'polynomial'};
+box_constraints = [10, 50, 100];
+
+% Initialize results structure
+results = struct('kernel', {}, 'box_constraint', {}, 'training_error', {}, 'testing_error', {});
+
+% Loop over kernel functions and box_constraints
+for k = 1:length(kernel_functions)
+    kernel = kernel_functions{k};
+    
+    for b = 1:length(box_constraints)
+        box_constraint = box_constraints(b);
+        
+        % Train SVM model
+        svm_model = fitcecoc(train_input, train_target, 'Learners', templateSVM('KernelFunction', kernel, 'BoxConstraint', box_constraint));
+        
+        % Predictions for training and testing data
+        train_predictions = predict(svm_model, train_input);
+        test_predictions = predict(svm_model, test_input);
+        
+        % Calculate error metrics
+        train_error = gfit2(train_target, train_predictions, 'all');
+        test_error = gfit2(test_target, test_predictions, 'all');
+        
+                
+        % Store results in the structure
+        results(end + 1).kernel = kernel;
+        results(end).box_constraint = box_constraint;
+        results(end).training_error = train_error;
+        results(end).testing_error = test_error;
+    end
+end
